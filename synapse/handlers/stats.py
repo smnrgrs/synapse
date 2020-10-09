@@ -87,7 +87,7 @@ class StatsHandler:
             if self.pos == room_max_stream_ordering:
                 break
 
-            logger.debug(
+            logger.info(
                 "Processing room stats %s->%s", self.pos, room_max_stream_ordering
             )
             max_pos, deltas = await self.store.get_current_state_deltas(
@@ -95,7 +95,7 @@ class StatsHandler:
             )
 
             if deltas:
-                logger.debug("Handling %d state deltas", len(deltas))
+                logger.info("Handling %d state deltas", len(deltas))
                 room_deltas, user_deltas = await self._handle_deltas(deltas)
             else:
                 room_deltas = {}
@@ -115,8 +115,8 @@ class StatsHandler:
             for user_id, fields in user_count.items():
                 user_deltas.setdefault(user_id, {}).update(fields)
 
-            logger.debug("room_deltas: %s", room_deltas)
-            logger.debug("user_deltas: %s", user_deltas)
+            logger.info("room_deltas: %s", room_deltas)
+            logger.info("user_deltas: %s", user_deltas)
 
             # Always call this so that we update the stats position.
             await self.store.bulk_update_stats_delta(
@@ -125,7 +125,7 @@ class StatsHandler:
                 stream_id=max_pos,
             )
 
-            logger.debug("Handled room stats to %s -> %s", self.pos, max_pos)
+            logger.info("Handled room stats to %s -> %s", self.pos, max_pos)
 
             event_processing_positions.labels("stats").set(max_pos)
 
@@ -153,14 +153,14 @@ class StatsHandler:
             stream_id = delta["stream_id"]
             prev_event_id = delta["prev_event_id"]
 
-            logger.debug("Handling: %r, %r %r, %s", room_id, typ, state_key, event_id)
+            logger.info("Handling: %r, %r %r, %s", room_id, typ, state_key, event_id)
 
             token = await self.store.get_earliest_token_for_stats("room", room_id)
 
             # If the earliest token to begin from is larger than our current
             # stream ID, skip processing this delta.
             if token is not None and token >= stream_id:
-                logger.debug(
+                logger.info(
                     "Ignoring: %s as earlier than this room's initial ingestion event",
                     event_id,
                 )
@@ -214,7 +214,7 @@ class StatsHandler:
                 membership = event_content.get("membership", Membership.LEAVE)
 
                 if prev_membership is None:
-                    logger.debug("No previous membership for this user.")
+                    logger.info("No previous membership for this user.")
                 elif membership == prev_membership:
                     pass  # noop
                 elif prev_membership == Membership.JOIN:
@@ -293,7 +293,7 @@ class StatsHandler:
                 room_state["guest_access"] = event_content.get("guest_access")
 
         for room_id, state in room_to_state_updates.items():
-            logger.debug("Updating room_stats_state for %s: %s", room_id, state)
+            logger.info("Updating room_stats_state for %s: %s", room_id, state)
             await self.store.update_room_state(room_id, state)
 
         return room_to_stats_deltas, user_to_stats_deltas
