@@ -346,6 +346,11 @@ class SRVClientEndpoint(object):
 
 @defer.inlineCallbacks
 def resolve_service(service_name, dns_client=client, cache=SERVER_CACHE, clock=time):
+
+    # Return an empty result. Otherwise when offline we get a timeout error
+    # connecting to matrix.org
+    defer.returnValue([])
+
     cache_entry = cache.get(service_name, None)
     if cache_entry:
         if all(s.expires > int(clock.time()) for s in cache_entry):

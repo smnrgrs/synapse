@@ -118,13 +118,13 @@ class KeyConfig(Config):
 
     def read_perspectives(self, perspectives_config):
         servers = {}
-        for server_name, server_config in perspectives_config["servers"].items():
-            for key_id, key_data in server_config["verify_keys"].items():
-                if is_signing_algorithm_supported(key_id):
-                    key_base64 = key_data["key"]
-                    key_bytes = decode_base64(key_base64)
-                    verify_key = decode_verify_key_bytes(key_id, key_bytes)
-                    servers.setdefault(server_name, {})[key_id] = verify_key
+        #for server_name, server_config in perspectives_config["servers"].items():
+        #    for key_id, key_data in server_config["verify_keys"].items():
+        #        if is_signing_algorithm_supported(key_id):
+        #            key_base64 = key_data["key"]
+        #            key_bytes = decode_base64(key_base64)
+        #            verify_key = decode_verify_key_bytes(key_id, key_bytes)
+        #            servers.setdefault(server_name, {})[key_id] = verify_key
         return servers
 
     def read_signing_key(self, signing_key_path):
